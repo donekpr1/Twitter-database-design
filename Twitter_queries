@@ -1,0 +1,53 @@
+-- -- Top 10 users with most tweets
+SELECT user_id, handle,first_name,last_name,tweet_count
+FROM user order by tweet_count desc limit 10
+
+#Top user with most no of likes on tweets
+select user.handle,tweets.no_of_likes from user inner join tweets on user.user_id =tweets.user_id
+order by tweets.no_of_likes desc limit 1
+
+#1Top user tweet which has most number of retweets
+select user.handle,tweets.no_of_retweets,tweets.content from user inner join tweets on user.user_id =tweets.user_id
+order by tweets.no_of_retweets desc limit 1
+#2 Retrieve a tweetid that has more than 5 comments
+select comments.tweet_id,count(comments.content)from comments group by tweet_id having(count(content))>5
+#3 Retrieve a tweet content, tweet id that has more than 5 comments
+select tweets.tweet_id,tweets.content, count(comments.content)from comments inner join tweets on tweets.tweet_id=comments.tweet_id
+ group by tweets.tweet_id having(count(comments.content))>5
+ 
+ #4 Retrieve users name whose has more than 1 retweet
+ select concat(user.first_name,user.last_name) as user,tweets.no_of_retweets from tweets inner join user on tweets.user_id=user.user_id
+ where tweets.no_of_retweets >1 order by tweets.no_of_retweets  
+ 
+ #5 Retrieve the comments for a tweet  deleted by its user  who first posted and later deleted
+ select comment_user_id,tweet_id,comments.content,is_active,created_date,last_updated_date from comments inner join user on user_id=comment_user_id where comments.is_active ='N'
+ 
+ #6 Who posted a comment for a  tweet and if deleted the comment,on which date it is deleted
+ select handle as username,comments.last_updated_date from user inner join comments on user.user_id=comments.comment_user_id 
+ where comments.is_active='N'
+ 
+ #7 Top 10 users with the most followers
+ select handle ,followers_count from user order by followers_count desc limit 10
+ 
+ #8Retrieve the users along with its Geo locations from where the  tweets are posted and when it was posted 
+ select handle,country,state,content,created_time from user inner join tweets on user.user_id=tweets.user_id inner join location on tweets.loc_id=location.loc_id
+ #9 Which country users have posted more number of tweets
+ select country,count(tweet_id) from tweets inner join location on tweets.loc_id=location.loc_id 
+ group by country order by count(tweet_id) desc limit 1
+ #10 list the number of users of twitter schema
+ select count(user_id) from user
+ #11 Retrieve the  5 recent tweets and its users
+ select tweet_id,user_id,content from tweets order by last_updated_time desc limit 5
+ #12 Which tweet has more number of likes 
+ select tweet_id,content,no_of_likes from tweets group by tweet_id,no_of_likes order by no_of_likes desc limit 1
+ #13Retrieve the count of retweets of a tweet and its user
+ select user_id,tweet_id,no_of_retweets from tweets group by tweet_id,no_of_retweets order by no_of_retweets desc
+ #14 Retrieve user who has more number of following count
+ select handle,following_count from user group by following_count order by following_count desc limit 1 
+ #15 Most popular 5 tweets 
+ Select user_id, tweet_id,content,(no_of_retweets*5 + no_of_likes) as engagement from tweets order by engagement desc limit 5;
+# 16 Search for most occuring keyword across different tweets during a time period
+SELECT content,tweet_id,last_updated_time FROM tweets WHERE  content like '%citizen%' and created_time between '2017-01-01' and '2020-11-11 ';
+#17 Retrieve tweets which has links 
+SELECT content,tweet_id,last_updated_time FROM tweets WHERE  content like '%http%'
+

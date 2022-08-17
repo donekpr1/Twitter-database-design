@@ -1,0 +1,270 @@
+-- MySQL Workbench Forward Engineering
+
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+
+-- -----------------------------------------------------
+-- Schema Twitter
+-- -----------------------------------------------------
+DROP SCHEMA IF EXISTS `Twitter` ;
+
+-- -----------------------------------------------------
+-- Schema Twitter
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `Twitter` DEFAULT CHARACTER SET utf8 ;
+SHOW WARNINGS;
+USE `Twitter` ;
+
+-- -----------------------------------------------------
+-- Table `Twitter`.`User`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `Twitter`.`User` ;
+
+SHOW WARNINGS;
+CREATE TABLE IF NOT EXISTS `Twitter`.`User` (
+  `User_ID` INT NOT NULL AUTO_INCREMENT,
+  `handle` VARCHAR(15) NOT NULL,
+  `First_name` VARCHAR(25) NOT NULL,
+  `Last_name` VARCHAR(25) NOT NULL,
+  `Contact` CHAR(10) NULL,
+  `Birth_Date` DATE NULL,
+  `Registered_date` DATETIME NOT NULL DEFAULT  CURRENT_TIMESTAMP,
+  `Bio` VARCHAR(255) NOT NULL,
+  `followers_count` INT NULL,
+  `following_count` INT NULL,
+  `Tweet_count` INT NULL,
+  `last_updated` DATETIME NOT NULL,
+  `url` VARCHAR(100) NOT NULL,
+  `gender` CHAR(1) NULL,
+  PRIMARY KEY (`User_ID`),
+  UNIQUE INDEX `handle_UNIQUE` (`handle` ASC) VISIBLE)
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `Twitter`.`Follows`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `Twitter`.`Follows` ;
+
+SHOW WARNINGS;
+CREATE TABLE IF NOT EXISTS `Twitter`.`Follows` (
+  `Follow_Id` INT NOT NULL AUTO_INCREMENT,
+  `Follower_user_name` VARCHAR(15) NOT NULL,
+  `Following_user_name` VARCHAR(15) NOT NULL,
+  PRIMARY KEY (`Follow_Id`, `Follower_user_name`, `Following_user_name`),
+  INDEX `fk_Follows_User2_idx` (`Following_user_name` ASC) VISIBLE,
+  UNIQUE INDEX `Follow_Id_UNIQUE` (`Follow_Id` ASC) VISIBLE,
+  CONSTRAINT `fk_Follows_User1`
+    FOREIGN KEY (`Follower_user_name`)
+    REFERENCES `Twitter`.`User` (`handle`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Follows_User2`
+    FOREIGN KEY (`Following_user_name`)
+    REFERENCES `Twitter`.`User` (`handle`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `Twitter`.`Location`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `Twitter`.`Location` ;
+
+SHOW WARNINGS;
+CREATE TABLE IF NOT EXISTS `Twitter`.`Location` (
+  `Loc_ID` INT NOT NULL,
+  `Country` VARCHAR(45) NOT NULL DEFAULT 'None',
+  `State` VARCHAR(45) NOT NULL DEFAULT 'None',
+  `City` VARCHAR(45) NULL DEFAULT 'None',
+  PRIMARY KEY (`Loc_ID`))
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `Twitter`.`Tweets`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `Twitter`.`Tweets` ;
+
+SHOW WARNINGS;
+CREATE TABLE IF NOT EXISTS `Twitter`.`Tweets` (
+  `Tweet_ID` INT NOT NULL AUTO_INCREMENT,
+  `User_ID` INT NOT NULL,
+  `Content` LONGTEXT NULL,
+  `created_time` DATETIME NULL,
+  `Is_Liked` CHAR(1) NULL,
+  `Is_commented` CHAR(1) NULL,
+  `Is_retweeted` CHAR(1) NULL,
+  `no_of_retweets` INT NULL,
+  `no_of_likes` INT NULL,
+  `Loc_ID` INT NOT NULL,
+  `lang` VARCHAR(20) NOT NULL,
+  `Is_active` CHAR(1) NOT NULL,
+  `Last_updated_time` DATETIME NOT NULL,
+
+   PRIMARY KEY (`Tweet_ID`),
+  INDEX `fk_Tweets_User1_idx` (`User_ID` ASC) VISIBLE,
+  INDEX `fk_Tweets_Location1_idx` (`Loc_ID` ASC) VISIBLE,
+  CONSTRAINT `fk_Tweets_User1`
+    FOREIGN KEY (`User_ID`)
+    REFERENCES `Twitter`.`User` (`User_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Tweets_Location1`
+    FOREIGN KEY (`Loc_ID`)
+    REFERENCES `Twitter`.`Location` (`Loc_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `Twitter`.`Comments`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `Twitter`.`Comments` ;
+
+SHOW WARNINGS;
+CREATE TABLE IF NOT EXISTS `Twitter`.`Comments` (
+  `Comment_ID` INT NOT NULL AUTO_INCREMENT,
+  `Comment_user_ID` INT NOT NULL,
+  `content` LONGTEXT NOT NULL,
+  `Tweet_ID` INT NOT NULL,
+  `no_of_likes` INT NULL,
+  `Created_date` DATETIME NULL,
+  `Is_active` CHAR(1) NULL,
+  `Last_updated_date` DATETIME NOT NULL,
+  PRIMARY KEY (`Comment_ID`),
+  INDEX `fk_Comments_User1_idx` (`Comment_user_ID` ASC) VISIBLE,
+  INDEX `fk_Comments_Tweets1_idx` (`Tweet_ID` ASC) VISIBLE,
+  UNIQUE INDEX `Comment_ID_UNIQUE` (`Comment_ID` ASC) VISIBLE,
+  CONSTRAINT `fk_Comments_User1`
+    FOREIGN KEY (`Comment_user_ID`)
+    REFERENCES `Twitter`.`User` (`User_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Comments_Tweets1`
+    FOREIGN KEY (`Tweet_ID`)
+    REFERENCES `Twitter`.`Tweets` (`Tweet_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `Twitter`.`Retweets`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `Twitter`.`Retweets` ;
+
+SHOW WARNINGS;
+CREATE TABLE IF NOT EXISTS `Twitter`.`Retweets` (
+  `ID` INT NOT NULL AUTO_INCREMENT,
+  `Retweet_User_ID` INT NULL,
+  `Tweet_ID` INT NULL,
+  `Created_date` DATETIME NULL,
+  PRIMARY KEY (`ID`),
+  INDEX `fk_Retweets_User1_idx` (`Retweet_User_ID` ASC) VISIBLE,
+  INDEX `fk_Retweets_Tweets1_idx` (`Tweet_ID` ASC) VISIBLE,
+  UNIQUE INDEX `ID_UNIQUE` (`ID` ASC) VISIBLE,
+  CONSTRAINT `fk_Retweets_User1`
+    FOREIGN KEY (`Retweet_User_ID`)
+    REFERENCES `Twitter`.`User` (`User_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Retweets_Tweets1`
+    FOREIGN KEY (`Tweet_ID`)
+    REFERENCES `Twitter`.`Tweets` (`Tweet_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `Twitter`.`Liked_comment`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `Twitter`.`Liked_comment` ;
+
+SHOW WARNINGS;
+CREATE TABLE IF NOT EXISTS `Twitter`.`Liked_comment` (
+  `ID` INT NOT NULL AUTO_INCREMENT,
+  `Like_user_ID` INT NOT NULL,
+  `comment_ID` INT NOT NULL,
+  `Timestamp` DATETIME NULL,
+  PRIMARY KEY (`ID`),
+  INDEX `fk_Liked_comment_Comments1_idx` (`comment_ID` ASC) VISIBLE,
+  INDEX `fk_Liked_comment_User1_idx` (`Like_user_ID` ASC) VISIBLE,
+  CONSTRAINT `fk_Liked_comment_Comments1`
+    FOREIGN KEY (`comment_ID`)
+    REFERENCES `Twitter`.`Comments` (`Comment_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Liked_comment_User1`
+    FOREIGN KEY (`Like_user_ID`)
+    REFERENCES `Twitter`.`User` (`User_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `Twitter`.`Liked_Tweets`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `Twitter`.`Liked_Tweets` ;
+
+SHOW WARNINGS;
+CREATE TABLE IF NOT EXISTS `Twitter`.`Liked_Tweets` (
+  `ID` INT NOT NULL AUTO_INCREMENT,
+  `Tweet_ID` INT NULL,
+  `Liked_user_ID` INT NULL,
+  `Timestamp` DATETIME NULL,
+  PRIMARY KEY (`ID`),
+  INDEX `fk_Liked_Tweets_Tweets1_idx` (`Tweet_ID` ASC) VISIBLE,
+  INDEX `fk_Liked_Tweets_User1_idx` (`Liked_user_ID` ASC) VISIBLE,
+  CONSTRAINT `fk_Liked_Tweets_Tweets1`
+    FOREIGN KEY (`Tweet_ID`)
+    REFERENCES `Twitter`.`Tweets` (`Tweet_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Liked_Tweets_User1`
+    FOREIGN KEY (`Liked_user_ID`)
+    REFERENCES `Twitter`.`User` (`User_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `Twitter`.`Login`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `Twitter`.`Login` ;
+
+SHOW WARNINGS;
+CREATE TABLE IF NOT EXISTS `Twitter`.`Login` (
+  `Login_ID` INT NOT NULL AUTO_INCREMENT,
+  `User_handle` VARCHAR(15) NULL,
+  `Timestamp` DATETIME NULL,
+  `Email_ID` VARCHAR(50) NOT NULL,
+  `password` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`Login_ID`),
+  INDEX `fk_Login_User1_idx` (`User_handle` ASC) VISIBLE,
+  CONSTRAINT `fk_Login_User1`
+    FOREIGN KEY (`User_handle`)
+    REFERENCES `Twitter`.`User` (`handle`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
